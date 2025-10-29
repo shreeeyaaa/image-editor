@@ -1,0 +1,80 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum LayerType {
+  IMAGE
+}
+
+// uploaded image files
+model Asset {
+  id           String   @id @default(cuid())
+  originalName String
+  mimeType     String
+  width        Int?
+  height       Int?
+  sizeBytes    Int?
+  url          String   
+  
+  createdAt    DateTime @default(now())
+  
+  layers       Layer[]
+}
+
+// design
+model Design {
+  id        String   @id @default(cuid())
+  title     String
+  width     Int      
+  height    Int      
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  layers    Layer[]
+}
+
+// one image layer in a design
+model Layer {
+  id       String    @id @default(cuid())
+  type     LayerType
+  
+  // Relations
+  design   Design    @relation(fields: [designId], references: [id], onDelete: Cascade)
+  designId String
+  
+  asset    Asset?    @relation(fields: [assetId], references: [id])
+  assetId  String?
+  
+  // transform the state
+  x        Float     @default(0)
+  y        Float     @default(0)
+  width    Float
+  height   Float
+  rotation Float     @default(0)
+  
+  flipX    Boolean   @default(false)
+  flipY    Boolean   @default(false)
+  
+    opacity  Float     @default(1)
+  zIndex   Int       @default(0)
+  
+  // cropping
+  cropX    Float?
+  cropY    Float?
+  cropW    Float?
+  cropH    Float?
+  
+  // layer controls
+  visible  Boolean   @default(true)
+ 
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
